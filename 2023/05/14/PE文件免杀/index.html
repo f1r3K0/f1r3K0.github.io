@@ -1,0 +1,186 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>PE文件免杀 | K4y | 明月清风是故人</title>
+
+  
+  <meta name="author" content="f1r3K0">
+  
+
+  
+  <meta name="description" content="Security">
+  
+
+  
+  
+  <meta name="keywords" content="">
+  
+
+  <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+  <meta property="og:title" content="PE文件免杀"/>
+
+  <meta property="og:site_name" content="K4y"/>
+
+  
+  <meta property="og:image" content="/favicon.ico"/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="K4y" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+<div class="blog">
+  <div class="content">
+
+    <header>
+  <div class="site-branding">
+    <h1 class="site-title">
+      <a href="/">K4y</a>
+    </h1>
+    <p class="site-description">明月清风是故人</p>
+  </div>
+  <nav class="site-navigation">
+    <ul>
+      
+        <li><a href="/">主页</a></li>
+      
+        <li><a href="/archives">归档</a></li>
+      
+        <li><a href="/categories">分类</a></li>
+      
+        <li><a href="/about">关于</a></li>
+      
+    </ul>
+  </nav>
+</header>
+
+    <main class="site-main posts-loop">
+    <article>
+
+  
+    
+    <h3 class="article-title"><span>PE文件免杀</span></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2023/05/14/PE文件免杀/" rel="bookmark">
+        <time class="entry-date published" datetime="2023-05-14T07:25:14.000Z">
+          2023-05-14
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        <blockquote>
+<p>​	近期遇到了次PHP+360全家桶的环境，尝试了使用处理过的桌管工具、CS样本免杀、以及DLL劫持等手法均未成功上线，最后通过php写的小脚本结合Burp实现了内网资产扫描😂，反思了下这么菜是不行的，作为一个德智体美全面发展的新时代安全人，打算remark一下（本文仅针对PE样本免杀做研究，与实战思路不同）</p>
+</blockquote>
+<p><em><span id="more"></span></em></p>
+<h4 id="0x01杀软识别"><a href="#0x01杀软识别" class="headerlink" title="0x01杀软识别"></a>0x01杀软识别</h4><p>上手tasklist &#x2F;svc</p>
+<p>然后，杀软识别<a target="_blank" rel="noopener" href="http://42.193.251.15/tasklist.php">http://42.193.251.15/tasklist.php</a></p>
+<p>有研究的一般都去针对性过杀软了，没研究的一般提前囤点loader也能冲。其实这就是个知己知彼的事，比如x绒、df、诺顿可能就对powshell检测能力一般，360就比较难刚。同理，杀软针对静态样本主要就是扫描一些样本侧的特征字符串，文件hash，针对运行态样本就是利用比如yara做内存查杀，针对行为做标记分析等等。当然，样本被标记之后大概率就被拿走了，被杀软上传云查或者人工分析。</p>
+<h4 id="0x02静态查杀"><a href="#0x02静态查杀" class="headerlink" title="0x02静态查杀"></a>0x02静态查杀</h4><p>样本在静态上最明显的两个特征就是shellcode和一些Winhex&#x2F;IDA打开后的硬编码字符特征，其次就是针对程序流混淆，扰乱杀软&#x2F;人的静态分析，还有一些比如资源上的小tips，比如若干时间之前文件后缀加空格才能绕过某杀软，也听过远古时期360图标也能免杀的。这里我简单列举一些常见对抗手法和部分案例。</p>
+<ul>
+<li>shellcode特征处理</li>
+</ul>
+<p><img src="/img/image-20230521135813011.png" alt="image-20230521135813011"></p>
+<p>这里的base64可以替换为异或&#x2F;AES&#x2F;DES&#x2F;佛论禅&#x2F;八卦等等加密手法，也可以自己实现一套加密逻辑，同时可以在首尾填充垃圾字符。</p>
+<p>测试了下base64效果不太好 自己实现了一套国学加密算法，效果还阔以。当然，如果环境允许，分离免杀的效果肯定是比样本里进行各种shellcode加密混淆效果要好的。</p>
+<p><img src="/img/image-20230521140807191.png" alt="image-20230521140807191"></p>
+<ul>
+<li>特征码修改</li>
+</ul>
+<p><img src="/Users/k/Desktop/Blog/source/img/image-20230521152922472.png" alt="image-20230521152922472"></p>
+<p>直接使用CCL+winhex进行特征码修改即可</p>
+<ul>
+<li><p>加壳&#x2F;花指令&#x2F;签名</p>
+<p>略。</p>
+</li>
+</ul>
+<h4 id="0x03动态查杀"><a href="#0x03动态查杀" class="headerlink" title="0x03动态查杀"></a>0x03动态查杀</h4><p>一般来说，杀软会通过对 ntdll 的关键 API 进行 hook， 实现对程序的 API 监控，同时在内核中注册一系列的回调函数实现对行为的监控。所以这里针对动态查杀可操作空间相对就比较大了，涉及杀软程序的云查、ASR、行为标记、通信流量等等，AMSI也会拦截很多恶意样本。</p>
+<ul>
+<li>云查杀</li>
+</ul>
+<p>针对云查杀应该99%的人都是通过反沙箱技术实现的，个人也在前前东家做过这方面的研究，针对国内沙箱或多或少也都专门提过一些特征，比如xx的host文件将127.0.0.1指向自家域名，xx的时间加了几十倍速，xx的杀箱的Office全家桶。当然也有些强特征比如内存大小，虚拟服务，开机时间、临时文件数量等等，个人常用就是把特有特征加上之后，针对强特征生成一个五元组，符合三个以上的特征则进入sleep。</p>
+<p><img src="/img/image-20230521160931901.png" alt="image-20230521160931901"></p>
+<ul>
+<li>通信流量</li>
+</ul>
+<p>C2profiles可以修改一些流量特征，甚至还能修改beacon运行的部分内存特征，手动修改一个自己用的profile可以避免比较初级的流量查杀，同样的，使用域前置、域借用、域隐藏也能比较好的在流量上隐藏特征。</p>
+<ul>
+<li>内存特征</li>
+</ul>
+<p>这几年大家都玩烂了的syscall，以及各种各样的系统级的syscall函数，比如NtCreateThreadEx，各种各样的获取函数地址的方法loadlibrary、loaddll、mustloaddll等等。目前应该有一部分杀软厂商解决了这部分的检测手段，相信目前没有未来也会有。这里可以强行对抗别人写好的yara检测规则，路子野一点也可以像针对AMSI的降级绕过一样，直接加驱动kill杀软或者EDR。</p>
+<h4 id="0x04启发式查杀"><a href="#0x04启发式查杀" class="headerlink" title="0x04启发式查杀"></a>0x04启发式查杀</h4><p>如果有分析过一些杀软应该知道很多杀软程序都会有一套自己的加减分的权重判断恶意的机制，这就是启发式查杀，比如分析某数字杀软会看到其在system中加载的一个叫做 Fsxxx.sys的驱动，其对进程、端口、文件、注册表进行了相应监控。</p>
+<p><img src="/img/image-20230521164753891.png" alt="image-20230521164753891"></p>
+<p>在文件落地后也会有杀软挂起相应的dll文件，甚至wscript程序运行也会让该杀软挂起一个进程。因此在我们拿到权限之后尽量使用类似BOF实现命令执行同时注意避免敏感操作。</p>
+<h4 id="0x05总结"><a href="#0x05总结" class="headerlink" title="0x05总结"></a>0x05总结</h4><p>（中途去参加了一场线下赛导致文章现在才编辑好，结果当然是日常发挥失常）</p>
+<p>针对杀软绕过这里其实还有好多知识点没有提，一方面是因为免杀手法本来就是千人千面，最后马子好用就行，另一方面这是一个比较大的框架，涉及的技术知识点太多了，而且这方面技术需要与时俱进，就像新出的lolbin没多久就G了，免杀技术一直以来都是见光死，希望这篇水文能给reader带来一些思路借鉴。</p>
+
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+      
+
+    <span class="post-categories">
+      <i class="icon-categories"></i>
+        <a href="/categories/RedTeam/">RedTeam</a>
+    </span>
+    
+
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+  
+
+
+
+
+
+
+
+
+
+    </main>
+
+    <footer class="site-footer">
+  <p class="site-info">
+    Proudly powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and
+    Theme by <a href="https://github.com/CodeDaraW/Hacker" target="_blank">Hacker</a>
+    </br>
+    
+    &copy; 2023 f1r3K0
+    
+  </p>
+</footer>
+    
+    
+  </div>
+</div>
+</body>
+</html>
