@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   
-  <title>PE文件免杀 | K的安全记事本 | 明月清风是故人</title>
+  <title>PE文件免杀 | f1r3K0 &#39; Blog | 明月清风是故人</title>
 
   
-  <meta name="author" content="K">
+  <meta name="author" content="f1r3K0">
   
 
   
@@ -24,14 +24,14 @@
 
   <meta property="og:title" content="PE文件免杀"/>
 
-  <meta property="og:site_name" content="K的安全记事本"/>
+  <meta property="og:site_name" content="f1r3K0 &#39; Blog"/>
 
   
   <meta property="og:image" content="/favicon.ico"/>
   
 
   <link href="/favicon.ico" rel="icon">
-  <link rel="alternate" href="/atom.xml" title="K的安全记事本" type="application/atom+xml">
+  <link rel="alternate" href="/atom.xml" title="f1r3K0 &#39; Blog" type="application/atom+xml">
   <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
 <meta name="generator" content="Hexo 6.3.0"></head>
 
@@ -42,7 +42,7 @@
     <header>
   <div class="site-branding">
     <h1 class="site-title">
-      <a href="/">K的安全记事本</a>
+      <a href="/">f1r3K0 &#39; Blog</a>
     </h1>
     <p class="site-description">明月清风是故人</p>
   </div>
@@ -87,9 +87,9 @@
     <div class="entry">
       
         <blockquote>
-<p>​	近期遇到了次PHP+360全家桶的环境，尝试了使用处理过的桌管工具、CS样本免杀、以及DLL劫持等手法均未成功上线，最后通过php写的小脚本结合Burp实现了内网资产扫描，反思了下作为一个德智体美全面发展的新时代安全人，应该remark一下（本文仅针对PE样本免杀做研究，与实战思路不同）</p>
+<p>本文仅针对PE样本免杀做研究，与实战思路不同）</p>
 </blockquote>
-<p><em><span id="more"></span></em></p>
+<p><em><code>&lt;!-- more --&gt;</code></em></p>
 <h4 id="0x01杀软识别"><a href="#0x01杀软识别" class="headerlink" title="0x01杀软识别"></a>0x01杀软识别</h4><p>上手tasklist &#x2F;svc</p>
 <p>然后，杀软识别<a target="_blank" rel="noopener" href="http://42.193.251.15/tasklist.php">http://42.193.251.15/tasklist.php</a></p>
 <p>有研究的一般都去针对性过杀软了，没研究的一般提前囤点loader也能冲。其实这就是个知己知彼的事，比如x绒、df、诺顿可能就对powshell检测能力一般，360就比较难刚。同理，杀软针对静态样本主要就是扫描一些样本侧的特征字符串，文件hash，针对运行态样本就是利用比如yara做内存查杀，针对行为做标记分析等等。当然，样本被标记之后大概率就被拿走了，被杀软上传云查或者人工分析。</p>
@@ -174,7 +174,7 @@
     Theme by <a href="https://github.com/CodeDaraW/Hacker" target="_blank">Hacker</a>
     </br>
     
-    &copy; 2024 K
+    &copy; 2024 f1r3K0
     
   </p>
 </footer>
