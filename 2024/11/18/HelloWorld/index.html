@@ -10,7 +10,7 @@
   
 
   
-  <meta name="description" content="PWN_ciscn_2019_c_11.分析程序12345678root@Hello-CTF:/mnt/c/Users/HelloCTF_OS/Desktop/pwnbuu# checksec ciscn_2019_c_1[*] &amp;#x27;/mnt/c/Users/HelloCTF_OS/Desk">
+  <meta name="description" content="1.分析程序12345678root@Hello-CTF:/mnt/c/Users/HelloCTF_OS/Desktop/pwnbuu# checksec ciscn_2019_c_1[*] &amp;#x27;/mnt/c/Users/HelloCTF_OS/Desktop/pwnbuu/ciscn_2">
   
 
   
@@ -118,7 +118,7 @@
 
 <div id="toc" class="toc-article">
       <div class="toc-content">
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#PWN-ciscn-2019-c-1"><span class="toc-text">PWN_ciscn_2019_c_1</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%88%86%E6%9E%90%E7%A8%8B%E5%BA%8F"><span class="toc-text">1.分析程序</span></a></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%88%86%E6%9E%90%E7%A8%8B%E5%BA%8F"><span class="toc-text">1.分析程序</span></a></li></ol>
       </div>
 </div>
 <style>
@@ -130,7 +130,7 @@
 
 
 
-        <h2 id="PWN-ciscn-2019-c-1"><a href="#PWN-ciscn-2019-c-1" class="headerlink" title="PWN_ciscn_2019_c_1"></a>PWN_ciscn_2019_c_1</h2><h3 id="1-分析程序"><a href="#1-分析程序" class="headerlink" title="1.分析程序"></a><strong>1.分析程序</strong></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">root@Hello-CTF:/mnt/c/Users/HelloCTF_OS/Desktop/pwnbuu# checksec ciscn_2019_c_1</span><br><span class="line">[*] &#x27;/mnt/c/Users/HelloCTF_OS/Desktop/pwnbuu/ciscn_2019_c_1&#x27;</span><br><span class="line">    Arch:       amd64-64-little</span><br><span class="line">    RELRO:      Partial RELRO</span><br><span class="line">    Stack:      No canary found</span><br><span class="line">    NX:         NX enabled</span><br><span class="line">    PIE:        No PIE (0x400000)</span><br><span class="line">    Stripped:   No</span><br></pre></td></tr></table></figure>
+        <h3 id="1-分析程序"><a href="#1-分析程序" class="headerlink" title="1.分析程序"></a><strong>1.分析程序</strong></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">root@Hello-CTF:/mnt/c/Users/HelloCTF_OS/Desktop/pwnbuu# checksec ciscn_2019_c_1</span><br><span class="line">[*] &#x27;/mnt/c/Users/HelloCTF_OS/Desktop/pwnbuu/ciscn_2019_c_1&#x27;</span><br><span class="line">    Arch:       amd64-64-little</span><br><span class="line">    RELRO:      Partial RELRO</span><br><span class="line">    Stack:      No canary found</span><br><span class="line">    NX:         NX enabled</span><br><span class="line">    PIE:        No PIE (0x400000)</span><br><span class="line">    Stripped:   No</span><br></pre></td></tr></table></figure>
 
 <p>开了NX，64位程序，主要功能是个加解密程序</p>
 <p><img src="/./img/image-20241119103650500.png" alt="image-20241119103650500"></p>
